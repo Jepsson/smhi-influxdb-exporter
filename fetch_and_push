@@ -41,13 +41,9 @@ if [ -z "$RETENTION_POLICY" ]; then
 fi
 
 declare -r api_url="https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${LONGITUDE}/lat/${LATITUDE}/data.json"
+declare -r temp=$(
+	curl --silent $api_url | \
+	jq '.timeSeries | .[0] | .parameters[] | select(.name == "t") | .values[0]')
 
-while true; do
-	declare -r temp=$(
-		curl --silent $api_url | \
-		jq '.timeSeries | .[0] | .parameters[] | select(.name == "t") | .values[0]')
-
-	curl --request POST --silent --user $INFLUX_USER:$INFLUX_PASS "http://$HOSTNAME:$PORT/write?db=$DATABASE&precision=h&rp=$RETENTION_POLICY" --data-binary "smhi_temp value=$temp"
-	sleep 1h
-done
+curl --request POST --silent --user $INFLUX_USER:$INFLUX_PASS "http://$HOSTNAME:$PORT/write?db=$DATABASE&precision=h&rp=$RETENTION_POLICY" --data-binary "smhi_temp value=$temp"
 

@@ -1,10 +1,11 @@
 FROM alpine
+
+COPY fetch_and_push /etc/periodic/hourly
+
 RUN apk --no-cache add	\
-	bash				\
-	curl				\
-	jq
+	bash		\
+	curl		\
+	jq &&		\
+    chmod +x /etc/periodic/hourly/fetch_and_push
 
-WORKDIR /app
-COPY fetch_and_push.sh /app
-
-ENTRYPOINT ["./fetch_and_push.sh"]
+ENTRYPOINT ["crond", "-f"]
